@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - Edificio 10 Pisos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* PALETA DE COLORES PREMIUM */
+        body {
+            background: #405559; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #f8fafc;
+        }
+
+        .header-title {
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .text-muted {
+            color: #cbd5e1 !important;
+        }
+
+        /* Tarjetas Contenedoras Principales */
+        .main-card {
+            background: #493d4e; 
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 28px;
+            transition: all 0.3s ease;
+        }
+
+        /* Filas de Pisos */
+        .piso-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+        }
+        
+        .piso-row:last-child {
+            border-bottom: none;
+        }
+
+        .piso-label {
+            width: 90px;
+            font-weight: 700;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Cuadrícula de Departamentos */
+        .deptos-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        /* Botones de Departamentos */
+        .btn-depto {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 0;
+            font-weight: 700;
+            color: white;
+            font-size: 0.95rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-depto:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0.95;
+        }
+
+        /* ESTADOS DE COLOR DE LOS DEPARTAMENTOS */
+        .bg-al-dia {
+            background: linear-gradient(135deg, #66a883 0%, #4f8f6b 100%) !important; 
+            color: #ffffff !important;
+        }
+
+        .bg-monto-pendiente {
+            background: linear-gradient(135deg, #1b8774 0%, #116959 100%) !important; 
+            color: #ffffff !important;
+        }
+
+        .bg-con-deuda {
+            background: linear-gradient(135deg, #ff3b5c 0%, #e62243 100%) !important; 
+            color: #ffffff !important;
+        }
+
+        /* Panel Lateral de Detalle */
+        .card-detalle {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            background: #493d4e; 
+            overflow: hidden;
+        }
+
+        .card-detalle .card-header {
+            background: rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Tabla de Conceptos Estilo Recibo */
+        .list-group-invoice .list-group-item {
+            border: none;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: transparent;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        .list-group-invoice .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-group-invoice .list-group-item span:last-child {
+            color: #ffffff !important;
+        }
+
+        /* Caja de Monto Total Destacada */
+        .caja-monto-premium {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Sección de Carga de Comprobantes */
+        .seccion-comprobante {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 16px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            padding: 20px;
+        }
+
+        /* DISEÑO PARA EL POPUP QR (MODAL DE CONSULTA) */
+        .modal-premium {
+            background: linear-gradient(135deg, #493d4e 0%, #322936 100%);
+            border-radius: 24px !important;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .modal-premium-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            padding: 20px 24px !important;
+        }
+
+        /* Inputs y Botones Generales */
+        .btn-dark {
+            background-color: #493d4e !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+        .btn-dark:hover {
+            background-color: #3d3241 !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #1b8774 0%, #116959 100%) !important;
+            border: none !important;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+        }
+        .form-control::file-selector-button {
+            background-color: #493d4e !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* ========================================== */
+        /* ESTILOS EXACTOS BASADOS EN image_84e40f.png */
+        /* ========================================== */
+        .custom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 15, 26, 0.85); /* Fondo oscuro translúcido */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .custom-popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .custom-popup-box {
+            background-color: #1e2538; /* Gris azulado oscuro de tu ejemplo image_84e40f.png */
+            width: 90%;
+            max-width: 480px;
+            padding: 40px 30px;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            transform: scale(0.85);
+            transition: transform 0.3s ease;
+        }
+
+        .custom-popup-overlay.active .custom-popup-box {
+            transform: scale(1);
+        }
+
+        /* Botón de cerrar de la esquina (X) */
+        .custom-popup-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: none;
+            border: none;
+            color: #a0aec0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .custom-popup-close-btn:hover {
+            color: #ffffff;
+        }
+
+        /* Título del Pop-up con su Check icon */
+        .custom-popup-title {
+            color: #10b981; /* Verde esmeralda vibrante */
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Texto descriptivo del cuerpo */
+        .custom-popup-message {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* Botón "Entendido" ovalado al centro */
+        .custom-popup-btn-action {
+            background-color: #10b981;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 50px; /* Completamente redondeado */
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            display: inline-block;
+        }
+
+        .custom-popup-btn-action:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+        }
+        
+        .custom-popup-btn-action:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-5">
+        <!-- Encabezado Principal -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+            <div>
+                <h1 class="header-title m-0">🏢 Monitoreo de Estado - Edificio 10 Pisos</h1>
+                <p class="text-muted m-0 mt-1">Sincronización automatizada basada en la Columna P (Estado) de la Matriz.</p>
+            </div>
+            <button class="btn btn-dark fw-bold px-4 py-2.5 rounded-3 shadow-sm d-flex align-items-center gap-2" onclick="sincronizarConSheets()">
+                <i class="bi bi-arrow-clockwise" id="iconSync"></i> Sincronizar Sistema
+            </button>
+        </div>
+
+        <!-- Banner Oculto de Alertas Críticas -->
+        <div id="errorBanner" class="alert alert-danger d-none fw-bold shadow-sm mb-4 rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> <span id="errorMessage">Error detectado</span>
+        </div>
+
+        <!-- Cargador de Pantalla (Loader) -->
+        <div id="loader" class="text-center py-5 main-card mb-4 d-none">
+            <div class="spinner-border text-light mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+            <p class="text-muted m-0 fw-semibold">Extrayendo información desde Google Sheets...</p>
+        </div>
+
+        <!-- Panel de Distribución General -->
+        <div class="row g-4" id="panelPrincipal">
+            <!-- Bloque Izquierdo: Mapa Estructural -->
+            <div class="col-lg-7">
+                <div class="main-card">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 pb-3 border-bottom gap-2" style="border-color: rgba(255,255,255,0.1) !important;">
+                        <h5 class="m-0 fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-grid-3x3-gap-fill text-secondary"></i> Mapa de Ocupación Visual
+                        </h5>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <span class="badge bg-al-dia px-2.5 py-1.5 rounded-2">Al día</span>
+                            <span class="badge bg-monto-pendiente px-2.5 py-1.5 rounded-2">Monto pendiente</span>
+                            <span class="badge bg-con-deuda px-2.5 py-1.5 rounded-2">Con deuda</span>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor Dinámico donde se dibujan los pisos -->
+                    <div id="contenedorPisos"></div>
+                </div>
+            </div>
+
+            <!-- Bloque Derecho: Panel de Detalles del Estado de Cuenta -->
+            <div class="col-lg-5">
+                <div class="card card-detalle h-100">
+                    <div class="card-header d-flex align-items-center gap-2">
+                        <i class="bi bi-wallet2 fs-5"></i>
+                        <h5 class="m-0 fw-bold">Detalle Financiero</h5>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column justify-content-center" id="panelDetail">
+
+                        <!-- Mensaje Inicial por Defecto -->
+                        <div class="text-center text-muted py-5" id="placeholderText">
+                            <i class="bi bi-building-up display-3 d-block mb-3 opacity-50"></i>
+                            <p class="fw-medium">Seleccione cualquier celda de departamento para desplegar el desglose y canales de pago.</p>
+                        </div>
+
+                        <!-- Panel de Información de Departamento Seleccionado -->
+                        <div id="datosContenedor" class="d-none w-100">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="fw-bold m-0">Departamento <span id="lblDepto" style="color: #66a883 !important;">---</span></h3>
+                                <span id="badgeEstado" class="badge fs-6 px-3 py-2 rounded-3">---</span>
+                            </div>
+
+                            <!-- Sección del Código QR Estilizado -->
+                            <div id="seccionQR" class="text-center mb-4 p-3 border rounded-4 bg-dark shadow-sm d-none" style="border-color: rgba(255,255,255,0.1) !important;">
+                                <p class="small fw-bold text-secondary mb-2">
+                                    <i class="bi bi-qr-code-scan"></i> CÓDIGO QR REGISTRADO (BANCO UNIÓN)
+                                </p>
+                                <img id="imgQR" 
+                                     src="https://lh3.googleusercontent.com/d/1wEnx2dAQVbTf1suLbcGgHMadZdHuSAkY" 
+                                     alt="QR de Pago Real" 
+                                     class="img-fluid border p-2 bg-white shadow-sm" 
+                                     style="max-width: 160px; border-radius: 12px; cursor: zoom-in;"
+                                     data-bs-toggle="modal" 
+                                     data-bs-target="#qrModal">
+                                <p class="text-muted mt-2 mb-0" style="font-size: 0.75rem;">
+                                    <i class="bi bi-arrows-fullscreen"></i> Presione la imagen para expandir a pantalla completa
+                                </p>
+                            </div>
+
+                            <!-- MODAL EXPANDIBLE DE CÓDIGO QR -->
+                            <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content modal-premium shadow-lg">
+                                        <div class="modal-header modal-premium-header border-0 align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-3 px-2 py-1 me-2 d-inline-flex align-items-center justify-content-center" style="height: 32px; width: 32px; background-color: #1b8774; color: white;">
+                                                    <i class="bi bi-qr-code-scan fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h5 class="modal-title fw-bold text-white mb-0" id="qrModalLabel" style="font-size: 1.1rem;">Pasarela de Pago Digital</h5>
+                                                    <span class="fw-semibold" style="font-size: 0.75rem; color: #66a883;">COMPROBACIÓN INMEDIATA</span>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                        </div>
+                                        <div class="modal-body text-center p-4">
+                                            <div class="bg-white p-3 rounded-4 shadow-sm inline-block mx-auto mb-3" style="max-width: 280px;">
+                                                <img src="https://lh3.googleusercontent.com/d/1wEnx2dAQVbTf1suLbcGgHMadZdHuSAkY" alt="QR de Pago" class="img-fluid">
+                                            </div>
+                                            <p class="text-light opacity-75 small m-0">Escanee el código QR desde su App de Banco Unión u otra entidad financiera.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <small class="text-muted fw-bold text-uppercase d-block" style="font-size: 0.75rem; letter-spacing: 0.5px;">Residente Registrado</small>
+                                <span class="fs-5 fw-bold text-white" id="lblInquilino">---</span>
+                            </div>
+
+                            <h6 class="fw-bold mb-2 text-secondary small text-uppercase" style="letter-spacing: 0.5px;">Desglose Analítico</h6>
+                            <div class="list-group list-group-invoice mb-4">
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Alquiler de Unidad</span> <span class="fw-bold" id="valAlquiler">0.00 Bs.</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Mantenimiento Interno</span> <span class="fw-bold" id="valMantenimiento">0.00 Bs.</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Servicio de Limpieza</span> <span class="fw-bold" id="valLimpieza">0.00 Bs.</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Seguridad y Vigilancia</span> <span class="fw-bold" id="valSeguridad">0.00 Bs.</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Consumo de Agua</span> <span class="fw-bold" id="valAgua">0.00 Bs.</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Consumo de Electricidad</span> <span class="fw-bold" id="valElectricidad">0.00 Bs.</span>
+                                </div>
+                            </div>
+
+                            <!-- Caja del Monto a Cancelar / Cancelado -->
+                            <div id="contenedorCajaMonto" class="caja-monto-premium d-flex justify-content-between align-items-center mb-4">
+                                <span class="fw-bold text-secondary" id="lblTextoMonto" style="font-size: 0.9rem;">Monto Total Estado:</span>
+                                <span class="h3 m-0 fw-bold" id="valTotal">0.00 Bs.</span>
+                            </div>
+
+                            <!-- Formulario para Subir Comprobantes -->
+                            <div id="seccionPago" class="seccion-comprobante d-none">
+                                <h6 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                                    <i class="bi bi-cloud-arrow-up text-secondary fs-5"></i> Cargar Comprobante Oficial
+                                </h6>
+                                <form id="formPago" onsubmit="event.preventDefault();">
+                                    <div class="mb-3">
+                                        <label id="lblInstruccionVoucher" for="archivoVoucher" class="form-label small fw-medium text-muted">Adjunte la captura o fotografía clara del documento:</label>
+                                        <input class="form-control form-control-sm rounded-2" type="file" id="archivoVoucher" accept="image/*" required>
+                                    </div>
+                                    <button type="button" id="btnSubirPago" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm" onclick="procesarEnvioPago()">
+                                        Confirmar y Enviar Operación
+                                    </button>
+                                </form>
+                                <div id="statusSubida" class="text-center small mt-2 d-none fw-bold"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VENTANA FLOTANTE (POP-UP AL MEDIO) - ASOCIADA A image_84e40f.png -->
+    <!-- ======================================================== -->
+    <div id="customPopupOverlay" class="custom-popup-overlay">
+        <div class="custom-popup-box">
+            <!-- Botón X en la esquina superior derecha -->
+            <button class="custom-popup-close-btn" onclick="cerrarCustomPopup()">&times;</button>
+            
+            <!-- Título y Estado Verde -->
+            <div class="custom-popup-title" id="customPopupTitle">
+                ✓ Solicitud Enviada
+            </div>
+            
+            <!-- Cuerpo del Mensaje Informativo -->
+            <div class="custom-popup-message" id="customPopupMessage">
+                Tu solicitud fue enviada correctamente.<br><br>
+                Para más detalles nos comunicaremos contigo mediante WhatsApp lo antes posible.
+            </div>
+            
+            <!-- Botón Central de Confirmación -->
+            <button class="custom-popup-btn-action" id="customPopupBtn" onclick="cerrarCustomPopup()">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <!-- Bootstrap Core JS bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- MÓDULO LOGICIAL JAVASCRIPT -->
+    <script>
+        var baseDatosEdificio = {};
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idUsuario = urlParams.get('id');
+            const loader = document.getElementById('loader');
+
+            if (idUsuario) {
+                if (loader) loader.classList.remove('d-none');
+
+                var panelIzquierdo = document.querySelector('.col-lg-7');
+                var panelDerecho = document.querySelector('.col-lg-5');
+                if (panelIzquierdo) panelIzquierdo.style.display = 'none';
+                if (panelDerecho) panelDerecho.className = 'col-lg-12';
+
+                google.script.run
+                    .withSuccessHandler(function(datos) {
+                        baseDatosEdificio = datos;
+                        if (loader) loader.classList.add('d-none');
+                        document.getElementById('placeholderText').classList.add('d-none');
+                        document.getElementById('datosContenedor').classList.remove('d-none');
+                        mostrarDetalles(idUsuario); 
+                    })
+                    .withFailureHandler(function(err) {
+                        alert("Error al cargar datos remotos: " + err.message);
+                    })
+                    .obtenerDatosEdificio();
+            } else {
+                sincronizarConSheets();
+            }
+        };
+
+        function abrirCustomPopup(titulo, mensaje, esError = false) {
+            const overlay = document.getElementById('customPopupOverlay');
+            const titleEl = document.getElementById('customPopupTitle');
+            const messageEl = document.getElementById('customPopupMessage');
+            const btnEl = document.getElementById('customPopupBtn');
+
+            titleEl.innerHTML = titulo;
+            messageEl.innerHTML = mensaje;
+
+            if (esError) {
+                titleEl.style.color = "#ff3b5c"; // Rojo para errores
+                btnEl.style.backgroundColor = "#ff3b5c";
+                btnEl.style.boxShadow = "0 4px 12px rgba(255, 59, 92, 0.3)";
+            } else {
+                titleEl.style.color = "#10b981"; // Verde para el éxito
+                btnEl.style.backgroundColor = "#10b981";
+                btnEl.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.3)";
+            }
+
+            overlay.classList.add('active');
+        }
+
+        function cerrarCustomPopup() {
+            document.getElementById('customPopupOverlay').classList.remove('active');
+        }
+
+        function sincronizarConSheets(callback) {
+            var loader = document.getElementById('loader');
+            var panel = document.getElementById('panelPrincipal');
+            if (loader && !callback) loader.classList.remove('d-none');
+            if (panel) panel.style.opacity = '0.2';
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(function(datos) {
+                        baseDatosEdificio = datos;
+                        renderizarEdificio();
+                        if (loader) loader.classList.add('d-none');
+                        if (panel) panel.style.opacity = '1';
+                        if (callback) callback();
+                    })
+                    .withFailureHandler(function(err) {
+                        alert('Fallo de conexión con Google Sheets: ' + err.message);
+                    })
+                    .obtenerDatosEdificio();
+            }
+        }
+
+        function renderizarEdificio() {
+            var contenedor = document.getElementById('contenedorPisos');
+            if (!contenedor) return;
+            contenedor.innerHTML = '';
+
+            for (var p = 10; p >= 1; p--) {
+                var row = document.createElement('div');
+                row.className = 'piso-row';
+                var label = document.createElement('div');
+                label.className = 'piso-label';
+                label.innerText = 'Piso ' + p;
+                row.appendChild(label);
+
+                var grid = document.createElement('div');
+                grid.className = 'deptos-grid';
+
+                for (var d = 1; d <= 4; d++) {
+                    var idDepto = (p === 10) ? '100' + d : p + '0' + d;
+                    var data = baseDatosEdificio[String(idDepto)] || { estadoSheet: 'Con deuda' };
+                    
+                    var color = 'bg-con-deuda';
+                    var estadoNormalizado = data.estadoSheet.trim();
+                    
+                    if (estadoNormalizado === 'Al día') {
+                        color = 'bg-al-dia';
+                    } else if (estadoNormalizado === 'Monto pendiente') {
+                        color = 'bg-monto-pendiente';
+                    }
+
+                    var btn = document.createElement('button');
+                    btn.className = 'btn-depto ' + color;
+                    btn.innerText = idDepto;
+                    btn.onclick = (function(id) { return function() { mostrarDetalles(id); }; })(idDepto);
+                    grid.appendChild(btn);
+                }
+                row.appendChild(grid);
+                contenedor.appendChild(row);
+            }
+        }
+
+        function mostrarDetalles(idDepto) {
+            var deptoData = baseDatosEdificio[String(idDepto)];
+            if (!deptoData) {
+                alert("No existen registros correspondientes al depto: " + idDepto);
+                return;
+            }
+
+            var statusDiv = document.getElementById('statusSubida');
+            if (statusDiv) {
+                statusDiv.innerText = '';
+                statusDiv.className = 'text-center small mt-2 d-none fw-bold';
+            }
+
+            document.getElementById('placeholderText').classList.add('d-none');
+            document.getElementById('datosContenedor').classList.remove('d-none');
+            
+            document.getElementById('lblDepto').innerText = idDepto;
+            document.getElementById('lblInquilino').innerText = deptoData.inquilino;
+
+            document.getElementById('valAlquiler').innerText = deptoData.alquiler.toFixed(2) + ' Bs.';
+            document.getElementById('valMantenimiento').innerText = deptoData.mantenimiento.toFixed(2) + ' Bs.';
+            document.getElementById('valLimpieza').innerText = deptoData.limpieza.toFixed(2) + ' Bs.';
+            document.getElementById('valSeguridad').innerText = deptoData.seguridad.toFixed(2) + ' Bs.';
+            document.getElementById('valAgua').innerText = deptoData.agua.toFixed(2) + ' Bs.';
+            document.getElementById('valElectricidad').innerText = deptoData.electricity.toFixed(2) + ' Bs.';
+
+            var estadoStr = deptoData.estadoSheet.trim();
+            var badge = document.getElementById('badgeEstado');
+            var cajaMonto = document.getElementById('contenedorCajaMonto');
+            var lblTextoMonto = document.getElementById('lblTextoMonto');
+            var valTotal = document.getElementById('valTotal');
+            var lblInstruccionVoucher = document.getElementById('lblInstruccionVoucher');
+
+            badge.innerText = estadoStr;
+
+            if (estadoStr === 'Al día') {
+                badge.className = 'badge bg-al-dia fs-6 px-3 py-2 rounded-3';
+                cajaMonto.style.background = 'rgba(102, 168, 131, 0.15)';
+                cajaMonto.style.borderColor = '#66a883';
+                valTotal.className = 'h3 m-0 fw-bold';
+                valTotal.style.color = '#66a883';
+                lblTextoMonto.innerText = "Monto Total Cancelado:";
+                valTotal.innerText = deptoData.totalMora.toFixed(2) + ' Bs.';
+                
+                document.getElementById('seccionQR').classList.add('d-none');
+                document.getElementById('seccionPago').classList.add('d-none');
+
+            } else if (estadoStr === 'Monto pendiente') {
+                badge.className = 'badge fs-6 px-3 py-2 bg-monto-pendiente rounded-3';
+                cajaMonto.style.background = 'rgba(27, 135, 116, 0.15)';
+                cajaMonto.style.borderColor = '#1b8774';
+                valTotal.className = 'h3 m-0 fw-bold';
+                valTotal.style.color = '#1b8774';
+                lblTextoMonto.innerText = "Monto Diferencia Pendiente:";
+                valTotal.innerText = deptoData.diferencia.toFixed(2) + ' Bs.';
+                lblInstruccionVoucher.innerText = "Cargar comprobante por la diferencia correspondiente:";
+                
+                document.getElementById('seccionQR').classList.remove('d-none');
+                document.getElementById('seccionPago').classList.remove('d-none');
+
+            } else { 
+                badge.className = 'badge bg-con-deuda fs-6 px-3 py-2 rounded-3';
+                cajaMonto.style.background = 'rgba(255, 59, 92, 0.15)';
+                cajaMonto.style.borderColor = '#ff3b5c';
+                valTotal.className = 'h3 m-0 fw-bold';
+                valTotal.style.color = '#ff3b5c';
+                lblTextoMonto.innerText = "Monto Total Acumulado:";
+                valTotal.innerText = deptoData.totalMora.toFixed(2) + ' Bs.';
+                lblInstruccionVoucher.innerText = "Adjunte la foto o captura del voucher inicial:";
+                
+                document.getElementById('seccionQR').classList.remove('d-none');
+                document.getElementById('seccionPago').classList.remove('d-none');
+            }
+        }
+
+        function procesarEnvioPago() {
+            var fileInput = document.getElementById('archivoVoucher');
+            var idDepto = document.getElementById('lblDepto').innerText;
+            var btn = document.getElementById('btnSubirPago');
+            var statusDiv = document.getElementById('statusSubida');
+            var errorBanner = document.getElementById('errorBanner');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("Por favor, seleccione un archivo de imagen antes de despachar.");
+                return;
+            }
+            
+            if (errorBanner) errorBanner.classList.add('d-none'); 
+            
+            var file = fileInput.files[0];
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Subiendo al repositorio...';
+            
+            if (statusDiv) {
+                statusDiv.classList.remove('d-none', 'text-danger', 'text-success');
+                statusDiv.classList.add('text-info');
+                statusDiv.innerText = "Almacenando archivo en Drive y actualizando matriz...";
+            }
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var base64Data = e.target.result.split(',')[1];
+                
+                var datosParaEnviar = {
+                    idDepto: idDepto,
+                    nombreArchivo: "Voucher_Depto_" + idDepto + "_" + new Date().getTime() + ".jpg",
+                    tipoMime: file.type,
+                    datosBase64: base64Data
+                };
+
+                google.script.run
+    .withSuccessHandler(function(resultado) {
+        btn.disabled = false;
+        btn.innerHTML = 'Confirmar y Enviar Operación';
+        
+        if (statusDiv) statusDiv.classList.add('d-none'); 
+        
+        // --- POP-UP REFORMULADO PARA PAGO DE ALQUILER Y EXPENSAS ---
+        abrirCustomPopup(
+            "✓ Comprobante Recibido",
+            "El comprobante de pago para el <b>Departamento " + idDepto + "</b> ha sido cargado con éxito.<br><br>La administración verificará el depósito en la cuenta del Banco Unión. El estado de la matriz se actualizará en unos instantes.",
+            false
+        );
+        
+        document.getElementById('formPago').reset();
+        
+        sincronizarConSheets(function() {
+            if(typeof mostrarDetalles === 'function') {
+                mostrarDetalles(idDepto);
+            }
+        });
+    })
+    .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.innerHTML = 'Confirmar y Enviar Operación';
+        
+        if (statusDiv) statusDiv.classList.add('d-none');
+
+        // Captura el error de permisos de DriveApp sin que la app se cuelgue
+        if (err.message.includes("DriveApp") || err.message.includes("Access Denied")) {
+            abrirCustomPopup(
+                "⚠️ Error de Permisos",
+                "La cuenta de ejecución no cuenta con acceso válido a <b>DriveApp</b>.<br>Por favor, revisa las autorizaciones del proyecto de macros (.gs).",
+                true
+            );
+        } else {
+            abrirCustomPopup(
+                "❌ Error Detectado",
+                "Ocurrió un imprevisto técnico: <br><small class='text-danger'>" + err.message + "</small>",
+                true
+            );
+        }
+    })
+    .registrarPagoConArchivo(datosParaEnviar);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+
+</html>
