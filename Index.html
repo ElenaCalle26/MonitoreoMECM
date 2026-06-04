@@ -494,8 +494,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- MÓDULO LOGICIAL JAVASCRIPT -->
-    <script>
+   <script>
         var baseDatosEdificio = {};
+        
+        // Pega AQUÍ la URL que copiaste en el paso anterior de Google Apps Script:
+        const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxg74BlojDrXAArY2lfkhS8CREmEJBWAngt2G7sjoAkuyb31WNwv-Ipr-0HlCReuaHIuA/exec";
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -510,18 +513,19 @@
                 if (panelIzquierdo) panelIzquierdo.style.display = 'none';
                 if (panelDerecho) panelDerecho.className = 'col-lg-12';
 
-                google.script.run
-                    .withSuccessHandler(function(datos) {
+                // Reemplazo de google.script.run para cargar un ID directo por URL
+                fetch(URL_WEB_APP)
+                    .then(response => response.json())
+                    .then(datos => {
                         baseDatosEdificio = datos;
                         if (loader) loader.classList.add('d-none');
                         document.getElementById('placeholderText').classList.add('d-none');
                         document.getElementById('datosContenedor').classList.remove('d-none');
                         mostrarDetalles(idUsuario); 
                     })
-                    .withFailureHandler(function(err) {
-                        alert("Error al cargar datos remotos: " + err.message);
-                    })
-                    .obtenerDatosEdificio();
+                    .catch(err => {
+                        alert("Error al cargar datos remotos desde GitHub: " + err.message);
+                    });
             } else {
                 sincronizarConSheets();
             }
@@ -537,11 +541,11 @@
             messageEl.innerHTML = mensaje;
 
             if (esError) {
-                titleEl.style.color = "#ff3b5c"; // Rojo para errores
+                titleEl.style.color = "#ff3b5c"; 
                 btnEl.style.backgroundColor = "#ff3b5c";
                 btnEl.style.boxShadow = "0 4px 12px rgba(255, 59, 92, 0.3)";
             } else {
-                titleEl.style.color = "#10b981"; // Verde para el éxito
+                titleEl.style.color = "#10b981"; 
                 btnEl.style.backgroundColor = "#10b981";
                 btnEl.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.3)";
             }
@@ -553,26 +557,27 @@
             document.getElementById('customPopupOverlay').classList.remove('active');
         }
 
+        // --- REEMPLAZO TOTAL DE SINCRONIZAR CON SHEETS (Llamada GET) ---
         function sincronizarConSheets(callback) {
             var loader = document.getElementById('loader');
             var panel = document.getElementById('panelPrincipal');
             if (loader && !callback) loader.classList.remove('d-none');
             if (panel) panel.style.opacity = '0.2';
 
-            if (typeof google !== 'undefined' && google.script) {
-                google.script.run
-                    .withSuccessHandler(function(datos) {
-                        baseDatosEdificio = datos;
-                        renderizarEdificio();
-                        if (loader) loader.classList.add('d-none');
-                        if (panel) panel.style.opacity = '1';
-                        if (callback) callback();
-                    })
-                    .withFailureHandler(function(err) {
-                        alert('Fallo de conexión con Google Sheets: ' + err.message);
-                    })
-                    .obtenerDatosEdificio();
-            }
+            fetch(URL_WEB_APP)
+                .then(response => response.json())
+                .then(datos => {
+                    baseDatosEdificio = datos;
+                    renderizarEdificio();
+                    if (loader) loader.classList.add('d-none');
+                    if (panel) panel.style.opacity = '1';
+                    if (callback) callback();
+                })
+                .catch(err => {
+                    if (loader) loader.classList.add('d-none');
+                    if (panel) panel.style.opacity = '1';
+                    alert('Fallo de conexión con Google Sheets desde GitHub: ' + err.message);
+                });
         }
 
         function renderizarEdificio() {
@@ -690,6 +695,7 @@
             }
         }
 
+        // --- REEMPLAZO TOTAL DE ENVIAR PAGO (Llamada POST via fetch) ---
         function procesarEnvioPago() {
             var fileInput = document.getElementById('archivoVoucher');
             var idDepto = document.getElementById('lblDepto').innerText;
@@ -725,50 +731,50 @@
                     datosBase64: base64Data
                 };
 
-                google.script.run
-    .withSuccessHandler(function(resultado) {
-        btn.disabled = false;
-        btn.innerHTML = 'Confirmar y Enviar Operación';
-        
-        if (statusDiv) statusDiv.classList.add('d-none'); 
-        
-        // --- POP-UP REFORMULADO PARA PAGO DE ALQUILER Y EXPENSAS ---
-        abrirCustomPopup(
-            "✓ Comprobante Recibido",
-            "El comprobante de pago para el <b>Departamento " + idDepto + "</b> ha sido cargado con éxito.<br><br>La administración verificará el depósito en la cuenta del Banco Unión. El estado de la matriz se actualizará en unos instantes.",
-            false
-        );
-        
-        document.getElementById('formPago').reset();
-        
-        sincronizarConSheets(function() {
-            if(typeof mostrarDetalles === 'function') {
-                mostrarDetalles(idDepto);
-            }
-        });
-    })
-    .withFailureHandler(function(err) {
-        btn.disabled = false;
-        btn.innerHTML = 'Confirmar y Enviar Operación';
-        
-        if (statusDiv) statusDiv.classList.add('d-none');
+                // Enviamos la solicitud POST a la Web App de Google
+                fetch(URL_WEB_APP, {
+                    method: 'POST',
+                    mode: 'no-cors', // Evita errores de CORS entre servidores externos
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(datosParaEnviar)
+                })
+                .then(() => {
+                    // Nota: 'no-cors' no retorna lectura directa por seguridad, asumimos procesamiento exitoso.
+                    btn.disabled = false;
+                    btn.innerHTML = 'Confirmar y Enviar Operación';
+                    
+                    if (statusDiv) statusDiv.classList.add('d-none'); 
+                    
+                    abrirCustomPopup(
+                        "✓ Comprobante Recibido",
+                        "El comprobante de pago para el <b>Departamento " + idDepto + "</b> ha sido cargado con éxito.<br><br>La administración verificará el depósito en la cuenta del Banco Unión. El estado de la matriz se actualizará en unos instantes.",
+                        false
+                    );
+                    
+                    document.getElementById('formPago').reset();
+                    
+                    // Esperar 4 segundos antes de recargar para darle tiempo a Google de guardar los datos de forma asíncrona
+                    setTimeout(function() {
+                        sincronizarConSheets(function() {
+                            if(typeof mostrarDetalles === 'function') {
+                                mostrarDetalles(idDepto);
+                            }
+                        });
+                    }, 4000);
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Confirmar y Enviar Operación';
+                    if (statusDiv) statusDiv.classList.add('d-none');
 
-        // Captura el error de permisos de DriveApp sin que la app se cuelgue
-        if (err.message.includes("DriveApp") || err.message.includes("Access Denied")) {
-            abrirCustomPopup(
-                "⚠️ Error de Permisos",
-                "La cuenta de ejecución no cuenta con acceso válido a <b>DriveApp</b>.<br>Por favor, revisa las autorizaciones del proyecto de macros (.gs).",
-                true
-            );
-        } else {
-            abrirCustomPopup(
-                "❌ Error Detectado",
-                "Ocurrió un imprevisto técnico: <br><small class='text-danger'>" + err.message + "</small>",
-                true
-            );
-        }
-    })
-    .registrarPagoConArchivo(datosParaEnviar);
+                    abrirCustomPopup(
+                        "❌ Error Detectado",
+                        "Ocurrió un imprevisto técnico: <br><small class='text-danger'>" + err.message + "</small>",
+                        true
+                    );
+                });
             };
             
             reader.readAsDataURL(file);

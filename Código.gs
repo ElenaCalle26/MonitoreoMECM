@@ -1,10 +1,50 @@
+/**
+ * =========================================================================
+ * MÓDULO DE ENRUTAMIENTO WEB (CONEXIÓN CON GITHUB PAGES)
+ * =========================================================================
+ */
+
+// 1. Maneja las peticiones de lectura (GET). Envía los datos del edificio a GitHub.
 function doGet(e) {
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('Gestión Edificio MECM')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  try {
+    var datos = obtenerDatosEdificio();
+    return ContentService.createTextOutput(JSON.stringify(datos))
+                         .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ exito: false, mensaje: error.toString() }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
-// 1. Obtener datos con mapeo exacto de las nuevas columnas automatizadas
+// 2. Maneja las peticiones de escritura (POST). Recibe el voucher desde GitHub y lo procesa.
+function doPost(e) {
+  try {
+    // Validar que existan datos de entrada
+    if (!e || !e.postData || !e.postData.contents) {
+      throw new Error("No se recibieron datos en la petición POST.");
+    }
+    
+    // Convertir el texto JSON que envía GitHub en un objeto JavaScript
+    var parametros = JSON.parse(e.postData.contents);
+    
+    // Ejecutar la función lógica de registro
+    var resultado = registrarPagoConArchivo(parametros); 
+    
+    return ContentService.createTextOutput(JSON.stringify(resultado))
+                         .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ exito: false, mensaje: error.toString() }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * =========================================================================
+ * LÓGICA DE NEGOCIO (PROCESAMIENTO DE DATOS)
+ * =========================================================================
+ */
+
+// 3. Obtener datos con mapeo exacto de las columnas automatizadas
 function obtenerDatosEdificio() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('BD edificio MECM') || ss.getSheets()[0];
@@ -40,8 +80,7 @@ function obtenerDatosEdificio() {
   return objetoEdificio;
 }
 
-// 2. Registrar voucher y guardar el link en la columna M
-// 2. Registrar voucher y guardar el link en la columna M
+// 4. Registrar voucher en Google Drive y guardar el enlace en la columna M del Excel
 function registrarPagoConArchivo(e) {
   try {
     if (!e) {
@@ -62,17 +101,17 @@ function registrarPagoConArchivo(e) {
     // Guardamos el archivo en Drive
     var archivoGuardado = carpeta.createFile(blob);
     
-    // USAMOS UN BLOQUE DE SEGURIDAD: Intentar dar permisos, si la cuenta lo prohíbe, continuar sin crashear
+    // USAMOS UN BLOQUE DE SEGURIDAD: Intentar dar permisos públicos de lectura al archivo
     try {
       archivoGuardado.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     } catch (errPermiso) {
-      // Si tu cuenta bloquea el acceso público externo, el script no morirá y guardará el link de todas formas
+      // Si la cuenta tiene directivas que bloquean el acceso externo, no detiene la ejecución
       Logger.log("Nota: Permisos públicos omitidos debido a políticas de la cuenta.");
     }
     
     var urlDeLaFoto = archivoGuardado.getUrl();
 
-    // URL de tu Excel
+    // URL de tu hoja de cálculo
     var urlExcel = "https://docs.google.com/spreadsheets/d/1g-QEovPN5mE11aB9rZOBLvxTuVtWDu2utQuRAAl-ZsM/edit"; 
     var libro = SpreadsheetApp.openByUrl(urlExcel);
     var hoja = libro.getSheetByName("BD edificio MECM") || libro.getSheets()[0];
@@ -88,7 +127,7 @@ function registrarPagoConArchivo(e) {
         var idCeldaExcel = String(datos[i][1]).trim().split('.')[0];
         
         if (idCeldaExcel === idBuscado) {
-          filaEncontrada = i + 1;
+          filaEncontrada = i + 1; // Ajuste por índice base 0 y fila de encabezado
           break;
         }
       }
@@ -101,7 +140,7 @@ function registrarPagoConArchivo(e) {
     // Escribir enlace en la columna M (Columna 13)
     hoja.getRange(filaEncontrada, 13).setValue(urlDeLaFoto);
     
-    // Forzar guardado inmediato en la hoja de cálculo
+    // Forzar el vaciado de memoria inmediato para asegurar la escritura de los datos
     SpreadsheetApp.flush();
 
     return {
